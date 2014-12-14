@@ -15,7 +15,6 @@ def map_combatant_entry(combatant):
     combatant_entry[re_matcher.group(1)] = int(re_matcher.group(2))
   return combatant_entry
 
-
 combatants = []
 while True:
   combatant = raw_input("Enter combatant (name [qty] initiative): ")
