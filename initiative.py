@@ -24,12 +24,12 @@ class InitiativeOrder:
   @staticmethod
   def _map_combatant_entry(raw_combatant):
     combatant_entry = {}
-    re_matcher = re.match(r'^(.+) (\d+) ([0-9]+\.?[0-9]+)$', raw_combatant)
+    re_matcher = re.match(r'^(.+) (\d+) ([0-9]+\.?[0-9]*)$', raw_combatant)
     if re_matcher:
       for i in range(int(re_matcher.group(2))):
         combatant_entry["%s %s" % (re_matcher.group(1), str(i + 1))] = float(re_matcher.group(3))
     else:
-      re_matcher = re.match(r'^(.+) ([0-9]+\.?[0-9]+)$', raw_combatant)
+      re_matcher = re.match(r'^(.+) ([0-9]+\.?[0-9]*)$', raw_combatant)
       combatant_entry[re_matcher.group(1)] = float(re_matcher.group(2))
     return combatant_entry
 
