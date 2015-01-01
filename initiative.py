@@ -7,42 +7,38 @@ import signal
 import sys
 
 class InitiativeOrder:
+  def __init__(self, combatants):
+    self.initialize_initiative_cycle(combatants)
 
-  def __init__(self, raw_combatant_list):
-    self.initialize_initiative_cycle(raw_combatant_list)
-
-  def initialize_initiative_cycle(self, raw_combatant_list):
-    initiatives = {}
-    for combatant_entry in map(InitiativeOrder._map_combatant_entry, raw_combatant_list):
-      initiatives.update(combatant_entry)
-    self.sorted_initiatives = sorted(initiatives.items(), key = operator.itemgetter(1), reverse = True)
+  def initialize_initiative_cycle(self, combatants):
+    self.sorted_initiatives = sorted(combatants.items(), key = operator.itemgetter(1), reverse = True)
     self.initiative_cycle = cycle(range(len(self.sorted_initiatives)))
 
   def next_combatant(self):
     return self.sorted_initiatives[self.initiative_cycle.next()][0]
 
-  @staticmethod
-  def _map_combatant_entry(raw_combatant):
-    combatant_entry = {}
-    re_matcher = re.match(r'^(.+) (\d+) ([0-9]+\.?[0-9]*)$', raw_combatant)
-    if re_matcher:
-      for i in range(int(re_matcher.group(2))):
-        combatant_entry["%s %s" % (re_matcher.group(1), str(i + 1))] = float(re_matcher.group(3))
-    else:
-      re_matcher = re.match(r'^(.+) ([0-9]+\.?[0-9]*)$', raw_combatant)
-      combatant_entry[re_matcher.group(1)] = float(re_matcher.group(2))
-    return combatant_entry
+class InputReader:
+  def read_input(self):
+    print "Add combatants. Use an empty value when you're done.\n\n"
+    combatants = {}
+    while True:
+      combatant_input = raw_input("Enter combatant (name [qty] initiative): ")
+      if combatant_input:
+        combatants.update(self._parse_combatant_input(combatant_input))
+      else:
+        break
+    return combatants
 
-def read_input():
-  combatants = []
-  print "Add combatants. Use an empty value when you're done.\n\n"
-  while True:
-    combatant = raw_input("Enter combatant (name [qty] initiative): ")
-    if combatant:
-      combatants.append(combatant)
+  def _parse_combatant_input(self, combatant_input):
+    regex_matcher = re.match(r'^(.+) (\d+) ([0-9]+\.?[0-9]*)$', combatant_input)
+    if regex_matcher:
+      combatants = {}
+      for i in range(int(regex_matcher.group(2))):
+        combatants["%s %s" % (regex_matcher.group(1), str(i + 1))] = float(regex_matcher.group(3))
+      return combatants
     else:
-      break
-  return combatants
+      regex_matcher = re.match(r'^(.+) ([0-9]+\.?[0-9]*)$', combatant_input)
+      return {regex_matcher.group(1): float(regex_matcher.group(2))}
 
 def sigint_handler(signal, frame):
   quit()
@@ -53,12 +49,10 @@ def quit():
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, sigint_handler)
-  user_input = read_input()
-  if user_input:
-    initiative_order = InitiativeOrder(user_input)
-  else:
-    quit()
+  combatants = InputReader().read_input()
+  initiative_order = InitiativeOrder(combatants) if combatants else quit()
   
   while True:
     print "\nNow it's %s's turn\n" % initiative_order.next_combatant()
     raw_input("press Enter for next combatant or hit Ctrl+c to leave")
+
