@@ -35,21 +35,30 @@ class InitiativeOrder:
 
 def read_input():
   combatants = []
+  print "Add combatants. Use an empty value when you're done.\n\n"
   while True:
     combatant = raw_input("Enter combatant (name [qty] initiative): ")
-    if (combatant):
+    if combatant:
       combatants.append(combatant)
     else:
       break
   return combatants
 
 def sigint_handler(signal, frame):
+  quit()
+
+def quit():
   print "\n\nBye :)\n"
   sys.exit(0)
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, sigint_handler)
-  initiative_order = InitiativeOrder(read_input())
+  user_input = read_input()
+  if user_input:
+    initiative_order = InitiativeOrder(user_input)
+  else:
+    quit()
+  
   while True:
     print "\nNow it's %s's turn\n" % initiative_order.next_combatant()
-    raw_input("press Enter for next combatant")
+    raw_input("press Enter for next combatant or hit Ctrl+c to leave")
