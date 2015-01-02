@@ -1,16 +1,16 @@
 #!/usr/bin/python
 
 from itertools import cycle
+
 import operator
 import re
 import signal
-import sys
 
 class InitiativeOrder:
   def __init__(self, combatants):
-    self.initialize_initiative_cycle(combatants)
+    self._initialize_initiative_cycle(combatants)
 
-  def initialize_initiative_cycle(self, combatants):
+  def _initialize_initiative_cycle(self, combatants):
     self.sorted_initiatives = sorted(combatants.items(), key = operator.itemgetter(1), reverse = True)
     self.initiative_cycle = cycle(range(len(self.sorted_initiatives)))
 
@@ -32,27 +32,36 @@ class InputReader:
   def _parse_combatant_input(self, combatant_input):
     regex_matcher = re.match(r'^(.+) (\d+) ([0-9]+\.?[0-9]*)$', combatant_input)
     if regex_matcher:
-      combatants = {}
-      for i in range(int(regex_matcher.group(2))):
-        combatants["%s %s" % (regex_matcher.group(1), str(i + 1))] = float(regex_matcher.group(3))
-      return combatants
+      return self._create_multiple_combatant_entry(regex_matcher)
     else:
       regex_matcher = re.match(r'^(.+) ([0-9]+\.?[0-9]*)$', combatant_input)
-      return {regex_matcher.group(1): float(regex_matcher.group(2))}
+      if regex_matcher:
+        return self._create_single_combatant_entry(regex_matcher)
+      else:
+        print 'Invalid input: "%s"' % combatant_input
+        return {}
+
+  def _create_multiple_combatant_entry(self, regex_matcher):
+    combatants = {}
+    for i in range(int(regex_matcher.group(2))):
+      combatants["%s %s" % (regex_matcher.group(1), str(i + 1))] = float(regex_matcher.group(3))
+    return combatants
+
+  def _create_single_combatant_entry(self, regex_matcher):
+    return {regex_matcher.group(1): float(regex_matcher.group(2))}
 
 def sigint_handler(signal, frame):
   quit()
 
 def quit():
   print "\n\nBye :)\n"
-  sys.exit(0)
+  exit(0)
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, sigint_handler)
   combatants = InputReader().read_input()
   initiative_order = InitiativeOrder(combatants) if combatants else quit()
-  
+
   while True:
     print "\nNow it's %s's turn\n" % initiative_order.next_combatant()
     raw_input("press Enter for next combatant or hit Ctrl+c to leave")
-
